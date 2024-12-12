@@ -1,13 +1,14 @@
 ﻿#include <iostream>
 #include <string>
 #include <regex>
+#include <fstream>
+#include <vector>
 
 // Структура для хранения информации об объекте
-struct sea {
+struct Sea {
     std::string name;
     double depth;
     double salinity;
-
     // Метод для вывода данных объекта
     void display() const {
         std::cout << "Name: " << name << std::endl;
@@ -16,35 +17,51 @@ struct sea {
     }
 };
 
-void building_of_the_object(std::string first, std::string second, std::string third) {
-    
-    std::string name = first;
-    double depth = std::stod(second);
-    double salinity = std::stod(third);
-
-    sea obj{ name, depth, salinity };
-
-    obj.display();
+Sea Build_object(Sea obj, const std::string& input) {
+    std::regex pattern_1("([\\w]+)");
+    std::regex pattern_2("([-+]?\[\\d.]+)");
+    std::smatch match;
+    if (std::regex_search(input, match, pattern_1)) {
+        obj.name = match.str();
+    }
+    std::sregex_iterator it(input.begin(), input.end(), pattern_2);
+    std::sregex_iterator end;
+    if (it != end) {
+        obj.depth = std::stod(it->str());
+        ++it;  // Переходим к следующему совпадению
+    }
+    if (it != end) {
+        obj.salinity = std::stod(it->str());
+    }
+    return obj;
 }
 
-void seorch_str(std::string input) {
-    
-    std::regex pattern("([a-zA-z]+)([\\s]+)([-+]?\[\\d.]+)([\\s]+)([-+]?\[\\d.]+)");
-    std::smatch match;
-    if (std::regex_match(input, match, pattern)) {
-        building_of_the_object(match[1], match[3], match[5]);
+std::vector<std::string> readFileLines(const std::string& filename) {
+    std::vector<std::string> lines;  // Вектор для хранения строк
+    std::ifstream file(filename);     // Открываем файл
+
+    if (!file.is_open()) {            // Проверяем, удалось ли открыть файл
+        std::cerr << "Ошибка при открытии файла: " << filename << std::endl;
+        return lines;                 // Возвращаем пустой вектор в случае ошибки
     }
-    else {
-        setlocale(LC_ALL, "RU");
-        std::cout << "Ошибка: строка не соответствует ожидаемому формату." << std::endl;
+
+    std::string line;
+    while (std::getline(file, line)) { // Читаем файл построчно
+        lines.push_back(line);          // Добавляем строку в вектор
     }
+
+    file.close();                      // Закрываем файл
+    return lines;                      // Возвращаем вектор строк
 }
 
 int main() {
-    // Пример входной строки
-    std::string input = "23.4  -2222.4542 2.4";
-    std::string input1 = "Dark  2222.366 2.4";
-    std::string input2 = "EERERvdv  2222.366 2.4";
+    // Примеры входных строк
 
-    seorch_str(input2);
+    std::string filename = "input.txt"; 
+    std::vector<std::string> lines = readFileLines(filename);
+
+
+    Sea obj;
+    Build_object(obj, lines[0]).display();
+    return 0;
 }
