@@ -54,6 +54,21 @@ std::vector<std::string> readFileLines(const std::string& filename) {
     return lines;                      // Возвращаем вектор строк
 }
 
+void writeSeasToFile(const std::vector<Sea>& sortedSeas, const std::string& filename) {
+    std::ofstream file(filename); // Открываем файл для записи
+
+    if (!file.is_open()) { // Проверяем, удалось ли открыть файл
+        std::cerr << "Ошибка при открытии файла для записи: " << filename << std::endl;
+        return; // Выходим из функции в случае ошибки
+    }
+
+    for (const auto& sea : sortedSeas) {
+        file << sea.name << " " << sea.depth << " " << sea.salinity << "\n"; // Записываем данные объекта в файл
+    }
+
+    file.close(); // Закрываем файл
+}
+
 int main() {
     // Примеры входных строк
 
