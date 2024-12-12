@@ -3,6 +3,8 @@
 #include <regex>
 #include <fstream>
 #include <vector>
+#include <map>
+#include <algorithm>
 
 // Структура для хранения информации об объекте
 struct Sea {
@@ -11,9 +13,7 @@ struct Sea {
     double salinity;
     // Метод для вывода данных объекта
     void display() const {
-        std::cout << "Name: " << name << std::endl;
-        std::cout << "Depth: " << depth << std::endl;
-        std::cout << "Salinity: " << salinity << std::endl;
+        std::cout << "Name: " << name << " Depth: " << depth << " Salinity: " << salinity << std::endl;
     }
 };
 
@@ -35,33 +35,59 @@ Sea Build_object(Sea obj, const std::string& input) {
     }
     return obj;
 }
+std::vector<Sea> sortSeas(const std::vector<Sea>& seas) {
+    std::map<double, Sea> seaMap;
 
-std::vector<std::string> readFileLines(const std::string& filename) {
-    std::vector<std::string> lines;  // Вектор для хранения строк
-    std::ifstream file(filename);     // Открываем файл
+    for (const auto& sea : seas) {
+        // Если глубина еще не добавлена или текущая солёность больше, чем у уже добавленного объекта
+        if (seaMap.find(sea.depth) == seaMap.end() || sea.salinity > seaMap[sea.depth].salinity) {
+            seaMap[sea.depth] = sea; // Обновляем объект с максимальной солёностью для данной глубины
+        }
+    }
 
-    if (!file.is_open()) {            // Проверяем, удалось ли открыть файл
+    // Создаем вектор для хранения отсортированных объектов
+    std::vector<Sea> sortedSeas;
+    for (const auto& pair : seaMap) {
+        sortedSeas.push_back(pair.second); // Добавляем объекты в новый вектор
+    }
+
+    return sortedSeas; // Возвращаем отсортированный вектор
+}
+
+std::vector<Sea> readSeasFromFile(const std::string& filename) {
+    std::vector<Sea> seas;       // Вектор для хранения объектов Sea
+    std::ifstream file(filename); // Открываем файл
+
+    if (!file.is_open()) {       // Проверяем, удалось ли открыть файл
         std::cerr << "Ошибка при открытии файла: " << filename << std::endl;
-        return lines;                 // Возвращаем пустой вектор в случае ошибки
+        return seas;             // Возвращаем пустой вектор в случае ошибки
     }
 
     std::string line;
     while (std::getline(file, line)) { // Читаем файл построчно
-        lines.push_back(line);          // Добавляем строку в вектор
+        Sea obj;
+        obj = Build_object(obj, line);// Создаем объект Sea из строки
+        seas.push_back(obj);             // Добавляем объект в вектор
     }
 
-    file.close();                      // Закрываем файл
-    return lines;                      // Возвращаем вектор строк
+    file.close();                     // Закрываем файл
+    return seas;                      // Возвращаем вектор объектов Sea
 }
+
 
 int main() {
     // Примеры входных строк
-
-    std::string filename = "input.txt"; 
-    std::vector<std::string> lines = readFileLines(filename);
-
-
-    Sea obj;
-    Build_object(obj, lines[0]).display();
+    std::string filename = "input.txt"; // Укажите имя вашего файла
+    std::string outputFilename = "output.txt"; // Укажите имя вашего выходного файла
+    std::vector<Sea> seas = readSeasFromFile(filename);
+    for (const auto& sea : seas) {
+        sea.display();
+    }
+    std::vector<Sea> sortedSeas = sortSeas(seas);
+    std::cout << "sort: " << std::endl;
+    for (const auto& sea : sortedSeas) {
+        sea.display();
+    }
+    writeSeasToFile(sortedSeas, outputFilename);
     return 0;
 }
