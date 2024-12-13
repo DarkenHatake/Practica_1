@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <string>
 #include <regex>
 #include <fstream>
@@ -16,7 +16,20 @@ struct Sea {
         std::cout << "Name: " << name << " Depth: " << depth << " Salinity: " << salinity << std::endl;
     }
 };
+void writeSeasToFile(const std::vector<Sea>& sortedSeas, const std::string& filename) {
+    std::ofstream file(filename); // Открываем файл для записи
 
+    if (!file.is_open()) { // Проверяем, удалось ли открыть файл
+        std::cerr << "Error opening file for writing: " << filename << std::endl;
+        return; // Выходим из функции в случае ошибки
+    }
+
+    for (const auto& sea : sortedSeas) {
+        file << sea.name << " " << sea.depth << " " << sea.salinity << "\n"; // Записываем данные объекта в файл
+    }
+
+    file.close(); // Закрываем файл
+}
 Sea Build_object(Sea obj, const std::string& input) {
     std::regex pattern_1("([\\w]+)");
     std::regex pattern_2("([-+]?\[\\d.]+)");
@@ -54,12 +67,12 @@ std::vector<Sea> sortSeas(const std::vector<Sea>& seas) {
     return sortedSeas; // Возвращаем отсортированный вектор
 }
 
-std::vector<Sea> readSeasFromFile(const std::string& filename) {
+std::vector<Sea> readSeas(const std::string& filename) {
     std::vector<Sea> seas;       // Вектор для хранения объектов Sea
     std::ifstream file(filename); // Открываем файл
 
     if (!file.is_open()) {       // Проверяем, удалось ли открыть файл
-        std::cerr << "Ошибка при открытии файла: " << filename << std::endl;
+        std::cerr << "Error opening file for writing " << filename << std::endl;
         return seas;             // Возвращаем пустой вектор в случае ошибки
     }
 
@@ -74,26 +87,12 @@ std::vector<Sea> readSeasFromFile(const std::string& filename) {
     return seas;                      // Возвращаем вектор объектов Sea
 }
 
-void writeSeasToFile(const std::vector<Sea>& sortedSeas, const std::string& filename) {
-    std::ofstream file(filename); // Открываем файл для записи
-
-    if (!file.is_open()) { // Проверяем, удалось ли открыть файл
-        std::cerr << "Ошибка при открытии файла для записи: " << filename << std::endl;
-        return; // Выходим из функции в случае ошибки
-    }
-
-    for (const auto& sea : sortedSeas) {
-        file << sea.name << " " << sea.depth << " " << sea.salinity << "\n"; // Записываем данные объекта в файл
-    }
-
-    file.close(); // Закрываем файл
-}
 
 int main() {
     // Примеры входных строк
     std::string filename = "input.txt"; // Укажите имя вашего файла
     std::string outputFilename = "output.txt"; // Укажите имя вашего выходного файла
-    std::vector<Sea> seas = readSeasFromFile(filename);
+    std::vector<Sea> seas = readSeas(filename);
     for (const auto& sea : seas) {
         sea.display();
     }
